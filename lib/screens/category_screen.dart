@@ -17,7 +17,6 @@ class _CategoryScreenState extends State<CategoryScreen>
   final CategoryStore _store = CategoryStore.to;
   final Rx<TabController?> _tabController = Rx<TabController?>(null);
 
-  // Convert to observables
   final RxString _selectedIcon = 'shopping_cart'.obs;
   final Rx<Color> _selectedColor = Colors.blue.obs;
   final RxBool _isDialogOpen = false.obs;
@@ -83,7 +82,7 @@ class _CategoryScreenState extends State<CategoryScreen>
   void _showAddCategoryDialog() {
     _nameController.text = '';
     _selectedIcon.value = 'shopping_cart';
-    _selectedColor.value = Colors.blue; // Reset to default color
+    _selectedColor.value = Colors.blue;
     _isDialogOpen.value = true;
 
     Get.dialog(

@@ -31,14 +31,11 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
     super.initState();
     calculateStatistics();
 
-    // React to expense changes
     ever(_expenseStore.expenses, (_) {
       calculateStatistics();
     });
 
-    // React to category changes
     ever(_categoryStore.categories, (_) {
-      // Only regenerate colors when categories change
       if (categoryTotals.isNotEmpty) {
         generateCategoryColors();
       }
@@ -73,7 +70,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   void generateCategoryColors() {
     final List<Color> newColors = [];
 
-    // Use category colors from category store
     for (var category in categoryTotals.keys) {
       final categoryObj = _categoryStore.categories.firstWhereOrNull(
         (c) => c.name == category,
@@ -81,11 +77,8 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
       final Color color;
       if (categoryObj != null) {
-        // Use the color from the category store
         color = categoryObj.color;
       } else {
-        // Fallback - generate deterministic color based on category name
-        // This ensures the same category always gets the same color
         final hash = category.hashCode;
         color = Color.fromARGB(
           255,
@@ -109,7 +102,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(Icons.settings_rounded),
+            icon: Icon(Icons.settings_rounded, color: Colors.blue),
             onPressed: () {
               Get.to(() => const SettingsScreen());
             },
@@ -287,7 +280,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
             1,
           );
 
-          // Find the category in the store to get the icon
           final categoryObj = _categoryStore.categories.firstWhereOrNull(
             (c) => c.name == category,
           );

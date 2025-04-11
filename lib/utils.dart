@@ -6,7 +6,6 @@ import 'package:get_storage/get_storage.dart';
 class StorageUtils {
   static final storage = GetStorage();
 
-  // Generic function to save data to storage
   static Future<void> saveToStorage<T>(
     String key,
     List<T> items,
@@ -18,7 +17,6 @@ class StorageUtils {
     );
   }
 
-  // Generic function to read data from storage
   static List<T> readFromStorage<T>(String key, Function fromJsonConverter) {
     final List<dynamic> rawList = storage.read<List>(key) ?? [];
     final List<Map<String, dynamic>> dataList =
@@ -30,7 +28,6 @@ class StorageUtils {
 }
 
 class ValidationUtils {
-  // Validate expense inputs
   static bool validateExpenseInputs(String name, String place, String amount) {
     if (name.isEmpty || amount.isEmpty || place.isEmpty) {
       Get.snackbar("Error", "Please fill in all fields");

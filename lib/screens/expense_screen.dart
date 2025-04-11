@@ -39,7 +39,6 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       _selectedCategory.value = _categoryStore.categories.first.name;
     }
 
-    // Update selected category if categories change and current one is no longer available
     ever(_categoryStore.categories, (_) {
       if (_categoryStore.categories.isNotEmpty &&
           !_categoryStore.categories.any(
@@ -88,7 +87,6 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     );
 
     if (pickedDate != null) {
-      // Keep the time from the previous selection, just update the date
       _selectedDateTime.value = DateTime(
         pickedDate.year,
         pickedDate.month,
@@ -106,7 +104,6 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     );
 
     if (pickedTime != null) {
-      // Keep the date from the previous selection, just update the time
       _selectedDateTime.value = DateTime(
         _selectedDateTime.value.year,
         _selectedDateTime.value.month,
@@ -252,7 +249,6 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
                     if (categoryObj != null)
                       Icon(
                         IconUtils.getIconData(categoryObj.icon),
-                        // Add color from the category if available
                         color: categoryObj.color,
                       ),
                     const SizedBox(width: 16),
@@ -387,7 +383,6 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       (c) => c.name == expense.category,
     );
 
-    // Format the date/time if available
     final String dateTimeText = DateFormat(
       'MMM dd, yyyy • HH:mm',
     ).format(expense.dateTime);
