@@ -239,7 +239,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
 
     for (var category in categoryTotals.keys) {
       final value = categoryTotals[category]!;
-      final percent = (value / totalSpending.value * 100).toStringAsFixed(1);
 
       result.add(
         PieChartSectionData(
