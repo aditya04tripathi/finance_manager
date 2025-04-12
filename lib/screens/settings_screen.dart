@@ -5,7 +5,7 @@ import '../stores/settings_store.dart';
 import '../utils/currency_data.dart';
 
 class SettingsScreen extends StatefulWidget {
-  const SettingsScreen({Key? key}) : super(key: key);
+  const SettingsScreen({super.key});
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();

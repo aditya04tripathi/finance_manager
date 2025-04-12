@@ -1,10 +1,17 @@
+import 'dart:io';
+
+import 'package:easy_image_viewer/easy_image_viewer.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_pdfview/flutter_pdfview.dart';
 import 'package:get/get.dart';
 import 'package:finance_manager/utils.dart';
 import 'package:finance_manager/stores/expense_store.dart';
 import 'package:finance_manager/stores/category_store.dart';
 import 'package:finance_manager/utils/icon_utils.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
 
 class ExpenseScreen extends StatefulWidget {
   const ExpenseScreen({super.key});
@@ -19,6 +26,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
   final TextEditingController _placeController = TextEditingController();
   final ExpenseStore _store = ExpenseStore.to;
   final CategoryStore _categoryStore = CategoryStore.to;
+  final RxString _selectedFileath = ''.obs;
 
   final RxString _selectedCategory = 'Uncategorized'.obs;
   final RxBool _isDialogOpen = false.obs;
@@ -144,8 +152,137 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           _buildDateTimePicker(),
           const SizedBox(height: 16),
           _buildCategoryDropdown(),
+          const SizedBox(height: 16),
+          _buildPhotoPicker(),
         ],
       ),
+    );
+  }
+
+  Future<void> _showCameraOrMediaPicker({bool isCamera = true}) async {
+    final ImagePicker imagePicker = ImagePicker();
+    final XFile? pickedFile = await imagePicker.pickImage(
+      source: isCamera ? ImageSource.camera : ImageSource.gallery,
+      imageQuality: 100,
+    );
+
+    if (pickedFile != null) {
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final String fileName = pickedFile.name;
+      final File newFile = File('${appDir.path}/$fileName');
+      await newFile.writeAsBytes(await pickedFile.readAsBytes());
+      _selectedFileath.value = newFile.path;
+    } else {
+      ValidationUtils.showErrorSnackbar("No image selected. Please try again.");
+    }
+  }
+
+  Future<void> _showFilePicker() async {
+    final FilePickerResult? result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['pdf'],
+      allowMultiple: false,
+    );
+
+    if (result != null) {
+      final String filePath = result.files.single.path!;
+      final Directory appDir = await getApplicationDocumentsDirectory();
+      final String fileName = result.files.single.name;
+      final File newFile = File('${appDir.path}/$fileName');
+      await newFile.writeAsBytes(await File(filePath).readAsBytes());
+      _selectedFileath.value = newFile.path;
+      debugPrint("File path: ${_selectedFileath.value}");
+    } else {
+      ValidationUtils.showErrorSnackbar("No file selected. Please try again.");
+    }
+  }
+
+  Widget _buildPhotoPicker() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+          ),
+          onPressed: () {
+            Get.bottomSheet(
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16),
+                    topRight: Radius.circular(16),
+                  ),
+                ),
+                child: SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      ListTile(
+                        leading: const Icon(Icons.photo_library),
+                        title: const Text('Choose from Gallery'),
+                        onTap: () {
+                          _showCameraOrMediaPicker(isCamera: false);
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.camera_alt),
+                        title: const Text('Take a Photo'),
+                        onTap: () {
+                          _showCameraOrMediaPicker();
+                        },
+                      ),
+                      ListTile(
+                        leading: const Icon(Icons.attach_file),
+                        title: const Text('Select a PDF'),
+                        onTap: () {
+                          _showFilePicker();
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+          child: const Text(
+            "Add Receipt",
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+          ),
+        ),
+        Obx(
+          () => Row(
+            children: [
+              _selectedFileath.value.isNotEmpty
+                  ? _selectedCategory.value.contains("pdf")
+                      ? const Text(
+                        "PDF file selected",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      )
+                      : const Text(
+                        "Image file selected",
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
+                      )
+                  : const Text("No file selected"),
+              _selectedFileath.value.isNotEmpty
+                  ? IconButton(
+                    onPressed: () {
+                      _selectedFileath.value = '';
+                      ValidationUtils.showSuccessSnackbar("Receipt removed");
+                    },
+                    icon: const Icon(Icons.delete_rounded, color: Colors.red),
+                  )
+                  : SizedBox(),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -326,6 +463,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       amount: amount,
       category: _selectedCategory.value,
       dateTime: _selectedDateTime.value,
+      receiptFile: _selectedFileath.value,
     );
 
     if (expenseToEdit != null) {
@@ -387,102 +525,125 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       'MMM dd, yyyy • HH:mm',
     ).format(expense.dateTime);
 
-    return Card(
-      elevation: 0,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      if (categoryObj != null)
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Icon(
-                            IconUtils.getIconData(categoryObj.icon),
-                            size: 16,
-                          ),
-                        ),
-                      Text(
-                        expense.name,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Text(
-                    expense.place,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2.0),
-                    child: Row(
+    return GestureDetector(
+      onTap: () {
+        if (!expense.receiptFile!.contains("pdf")) {
+          showImageViewer(
+            context,
+            Image.file(File(expense.receiptFile!), fit: BoxFit.cover).image,
+            swipeDismissible: true,
+            doubleTapZoomable: true,
+            immersive: true,
+            useSafeArea: true,
+          );
+        } else {
+          Get.to(
+            () => PDFView(
+              filePath: expense.receiptFile!,
+              enableSwipe: true,
+              backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+              pageSnap: true,
+            ),
+          );
+        }
+      },
+      child: Card(
+        elevation: 0,
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Row(
                       children: [
-                        const Icon(
-                          Icons.access_time,
-                          size: 12,
-                          color: Colors.grey,
-                        ),
-                        const SizedBox(width: 4),
+                        if (categoryObj != null)
+                          Padding(
+                            padding: const EdgeInsets.only(right: 8.0),
+                            child: Icon(
+                              IconUtils.getIconData(categoryObj.icon),
+                              size: 16,
+                            ),
+                          ),
                         Text(
-                          dateTimeText,
+                          expense.name,
                           style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
                       ],
                     ),
+                    Text(
+                      expense.place,
+                      style: const TextStyle(fontSize: 12, color: Colors.grey),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 2.0),
+                      child: Row(
+                        children: [
+                          const Icon(
+                            Icons.access_time,
+                            size: 12,
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            dateTimeText,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Row(
+                      children: [
+                        Text(
+                          FormatUtils.formatCurrency(expense.amount),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          expense.category,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: Colors.blue,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Row(
+                children: [
+                  IconButton(
+                    onPressed:
+                        () => _showAddExpenseDialog(expenseToEdit: expense),
+                    icon: const Icon(Icons.edit_rounded),
                   ),
-                  const SizedBox(height: 4),
-                  Row(
-                    children: [
-                      Text(
-                        FormatUtils.formatCurrency(expense.amount),
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        expense.category,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue,
-                        ),
-                      ),
-                    ],
+                  IconButton(
+                    onPressed: () => _showDeleteDialog(expense),
+                    icon: const Icon(Icons.delete_rounded, color: Colors.red),
                   ),
                 ],
               ),
-            ),
-            const SizedBox(width: 16),
-            Row(
-              children: [
-                IconButton(
-                  onPressed:
-                      () => _showAddExpenseDialog(expenseToEdit: expense),
-                  icon: const Icon(Icons.edit_rounded),
-                ),
-                IconButton(
-                  onPressed: () => _showDeleteDialog(expense),
-                  icon: const Icon(Icons.delete_rounded, color: Colors.red),
-                ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

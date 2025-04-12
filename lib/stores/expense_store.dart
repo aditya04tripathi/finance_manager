@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:get/get.dart';
 import 'package:finance_manager/utils.dart';
 
@@ -7,14 +9,16 @@ class Expense {
   final double amount;
   final String category;
   final DateTime dateTime;
+  final String? receiptFile; // Path to receipt file (image or PDF)
 
   Expense({
     required this.place,
     required this.name,
     required this.amount,
     required this.category,
+    this.receiptFile,
     DateTime? dateTime,
-  }) : this.dateTime = dateTime ?? DateTime.now();
+  }) : dateTime = dateTime ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
     'place': place,
@@ -22,6 +26,7 @@ class Expense {
     'amount': amount,
     'category': category,
     'dateTime': dateTime.millisecondsSinceEpoch,
+    'receiptFile': receiptFile,
   };
 
   factory Expense.fromJson(Map<String, dynamic> json) => Expense(
@@ -29,6 +34,7 @@ class Expense {
     name: json['name'],
     amount: json['amount'],
     category: json['category'] ?? 'Uncategorized',
+    receiptFile: json['receiptFile'],
     dateTime:
         json['dateTime'] != null
             ? DateTime.fromMillisecondsSinceEpoch(json['dateTime'])
@@ -60,6 +66,27 @@ class ExpenseStore extends GetxController {
     }
   }
 
+  Future<void> addReceiptToExpense(Expense expense, String receiptPath) async {
+    isLoading.value = true;
+    try {
+      final Expense updatedExpense = Expense(
+        amount: expense.amount,
+        category: expense.category,
+        dateTime: expense.dateTime,
+        name: expense.name,
+        place: expense.place,
+        receiptFile: receiptPath,
+      );
+
+      await removeExpenseFromStorage(expense);
+      await addExpenseToStorage(updatedExpense);
+
+      expenses[expenses.indexOf(expense)] = updatedExpense;
+    } finally {
+      isLoading.value = false;
+    }
+  }
+
   void _updateGrossTotal() {
     grossTotal.value = expenses.fold(
       0.0,
@@ -72,6 +99,7 @@ class ExpenseStore extends GetxController {
     try {
       final List<Expense> expensesFromStorage =
           StorageUtils.readFromStorage<Expense>('expenses', Expense.fromJson);
+
       expensesFromStorage.add(expense);
       await StorageUtils.saveToStorage(
         'expenses',
@@ -118,6 +146,16 @@ class ExpenseStore extends GetxController {
   Future<void> deleteExpense(Expense expense) async {
     expenses.remove(expense);
     await removeExpenseFromStorage(expense);
+    if (expense.receiptFile != null && expense.receiptFile!.isNotEmpty) {
+      try {
+        final file = File(expense.receiptFile!);
+        if (await file.exists()) {
+          await file.delete();
+        }
+      } catch (e) {
+        ValidationUtils.showErrorSnackbar('Error deleting receipt file.');
+      }
+    }
     _updateGrossTotal();
   }
 }

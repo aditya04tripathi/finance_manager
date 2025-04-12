@@ -12,7 +12,7 @@ class SettingsStore extends GetxController {
 
   final RxDouble _monthlyBudget = 0.0.obs;
   final RxString _selectedCurrency = 'USD'.obs;
-  Rx<DateTime?> _lastResetDate = Rx<DateTime?>(null);
+  final Rx<DateTime?> _lastResetDate = Rx<DateTime?>(null);
 
   double get monthlyBudget => _monthlyBudget.value;
   String get selectedCurrency => _selectedCurrency.value;
