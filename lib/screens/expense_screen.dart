@@ -206,7 +206,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           onPressed: () {
@@ -413,7 +413,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.blue,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           child:
@@ -681,7 +681,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(16),
                 ),
               ),
               child:

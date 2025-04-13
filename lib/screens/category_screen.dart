@@ -219,7 +219,7 @@ class _CategoryScreenState extends State<CategoryScreen>
             backgroundColor: _selectedColor.value,
             foregroundColor: Colors.white,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(16),
             ),
           ),
           child:

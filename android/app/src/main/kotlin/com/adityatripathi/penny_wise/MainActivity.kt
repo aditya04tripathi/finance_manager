@@ -1,4 +1,4 @@
-package com.adityatripathi.finance_manager
+package com.adityatripathi.penny_wise
 
 import io.flutter.embedding.android.FlutterActivity
 

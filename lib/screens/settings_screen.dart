@@ -1,3 +1,4 @@
+import 'package:finance_manager/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
@@ -104,17 +105,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   settingsStore.setMonthlyBudget(budget);
                   settingsStore.setCurrency(_selectedCurrency.value);
 
-                  Get.snackbar(
-                    "Success",
-                    "Settings saved successfully!",
-                    backgroundColor: Colors.green,
-                    colorText: Colors.white,
-                  );
+                  Get.back(canPop: true);
                 },
                 style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blue,
                   padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(16)),
+                  ),
                 ),
-                child: const Text('Save Settings'),
+                child: const Text(
+                  'Save Settings',
+                  style: TextStyle(color: Colors.white),
+                ),
               ),
             ),
           ],
