@@ -1,5 +1,5 @@
 name: finance_manager
-description: "A new Flutter project."
+description: "Track expenses, manage budgets, and achieve financial goals easily."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: "none" # Remove this line if you wish to publish to pub.dev
@@ -44,9 +44,10 @@ dependencies:
   flutter_pdfview: ^1.4.0
   path: ^1.9.1
   easy_image_viewer: ^1.5.1
+  google_mobile_ads: ^6.0.0
+dev_dependencies:
   flutter_native_splash: ^2.4.6
   flutter_launcher_icons: ^0.14.3
-dev_dependencies:
   flutter_test:
     sdk: flutter
 

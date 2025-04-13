@@ -62,5 +62,7 @@
 		<string>This app requires access to your camera to scan receipts and images for your transactions.</string>
 		<key>UIStatusBarHidden</key>
 		<false/>
+		<key>GADApplicationIdentifier</key>
+		<string>ca-app-pub-5931956401636205~9308739721</string>
 	</dict>
 </plist>
