@@ -13,7 +13,7 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final _budgetController = TextEditingController();
-  final _selectedCurrency = 'USD'.obs;
+  final _selectedCurrency = 'INR'.obs;
   final SettingsStore settingsStore = Get.find<SettingsStore>();
 
   @override

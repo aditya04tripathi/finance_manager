@@ -25,6 +25,7 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
   final RxInt totalTransactions = 0.obs;
   final RxList<Color> categoryColors = <Color>[].obs;
   final RxBool isCalculating = false.obs;
+  final RxString _selectedFilter = 'Category'.obs;
 
   @override
   void initState() {
@@ -52,8 +53,14 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
       totalSpending.value = 0;
 
       for (var expense in _expenseStore.expenses) {
-        categoryTotals[expense.category] =
-            (categoryTotals[expense.category] ?? 0) + expense.amount;
+        final key =
+            _selectedFilter.value == 'Category'
+                ? expense.category
+                : _selectedFilter.value == 'Place'
+                ? expense.place
+                : expense.name;
+
+        categoryTotals[key] = (categoryTotals[key] ?? 0) + expense.amount;
         totalSpending.value += expense.amount;
       }
 
@@ -130,13 +137,15 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  _buildFilterDropdown(),
+                  const SizedBox(height: 16),
                   _buildStatisticsOverview(),
                   const SizedBox(height: 16),
                   _buildSectionTitle("Expense Breakdown"),
                   const SizedBox(height: 16),
                   _buildPieChart(),
                   const SizedBox(height: 16),
-                  _buildSectionTitle("Spending by Category"),
+                  _buildSectionTitle("Spending by ${_selectedFilter.value}"),
                   const SizedBox(height: 16),
                   _buildCategoryList(),
                 ],
@@ -145,6 +154,36 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
           }),
         ),
       ),
+    );
+  }
+
+  Widget _buildFilterDropdown() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: const Text(
+            "Filter by: ",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+        ),
+        DropdownButton<String>(
+          value: _selectedFilter.value,
+          items:
+              ['Category', 'Place', 'Expense Name']
+                  .map(
+                    (filter) =>
+                        DropdownMenuItem(value: filter, child: Text(filter)),
+                  )
+                  .toList(),
+          onChanged: (value) {
+            if (value != null) {
+              _selectedFilter.value = value;
+              calculateStatistics(); // Recalculate based on the selected filter
+            }
+          },
+        ),
+      ],
     );
   }
 
@@ -253,10 +292,6 @@ class _AnalyzeScreenState extends State<AnalyzeScreen> {
             fontSize: 14,
             fontWeight: FontWeight.bold,
             color: Colors.black,
-            background:
-                Paint()
-                  ..color = Colors.white
-                  ..style = PaintingStyle.fill,
           ),
         ),
       );

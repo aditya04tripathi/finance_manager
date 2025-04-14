@@ -66,6 +66,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
       _amountController.text = expenseToEdit.amount.toString();
       _selectedCategory.value = expenseToEdit.category;
       _selectedDateTime.value = expenseToEdit.dateTime;
+      _selectedFileath.value = expenseToEdit.receiptFile ?? '';
     } else {
       _selectedCategory.value =
           _categoryStore.categories.isNotEmpty
@@ -256,34 +257,32 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
-        Obx(
-          () => Row(
-            children: [
-              _selectedFileath.value.isNotEmpty
-                  ? _selectedCategory.value.contains("pdf")
-                      ? const Text(
-                        "PDF file selected",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      )
-                      : const Text(
-                        "Image file selected",
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      )
-                  : const Text("No file selected"),
-              _selectedFileath.value.isNotEmpty
-                  ? IconButton(
-                    onPressed: () {
-                      _selectedFileath.value = '';
-                      ValidationUtils.showSuccessSnackbar("Receipt removed");
-                    },
-                    icon: const Icon(Icons.delete_rounded, color: Colors.red),
-                  )
-                  : SizedBox(),
-            ],
-          ),
-        ),
+        Obx(() => _buildSelectedFileWidgets()),
       ],
     );
+  }
+
+  Widget _buildSelectedFileWidgets() {
+    if (_selectedFileath.value.isNotEmpty) {
+      return Row(
+        children: [
+          Text(
+            _selectedFileath.value.contains("pdf")
+                ? "PDF file selected"
+                : "Image file selected",
+            style: const TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+          IconButton(
+            onPressed: () {
+              _selectedFileath.value = '';
+            },
+            icon: Icon(Icons.delete_rounded, color: Colors.red),
+          ),
+        ],
+      );
+    } else {
+      return const Text("No file selected");
+    }
   }
 
   Widget _buildDateTimePicker() {
@@ -522,7 +521,7 @@ class _ExpenseScreenState extends State<ExpenseScreen> {
     );
 
     final String dateTimeText = DateFormat(
-      'MMM dd, yyyy • HH:mm',
+      'MMM dd, yyyy • hh:mm a',
     ).format(expense.dateTime);
 
     return GestureDetector(
